@@ -1,46 +1,369 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Task Manager</title>
-  <style>
-    body { font-family: Arial; max-width: 500px; margin: 40px auto; }
-    li { margin: 8px 0; }
-    .completed { text-decoration: line-through; color: gray; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF1F5;
+    --surface: #FFFFFF;
+    --ink: #1B2430;
+    --muted: #6B7280;
+    --accent: #0F766E;
+    --accent-hover: #0B5C56;
+    --border: #E2E5EA;
+    --high: #DC2626;
+    --medium: #D97706;
+    --low: #6B7280;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 48px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg);
+  }
+
+  input[type="text"]:focus, select:focus, input[type="date"]:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  select, input[type="date"] {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+    background: var(--accent);
+    color: white;
+    transition: background 0.15s ease;
+  }
+
+  button:hover { background: var(--accent-hover); }
+
+  .tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .tabs button {
+    background: none;
+    color: var(--muted);
+    padding: 0 0 10px;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+  }
+
+  .tabs button:hover { background: none; color: var(--ink); }
+
+  .tabs button.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+
+  .task-count {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  li:last-child { border-bottom: none; }
+
+  .check-btn {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  li.completed .check-btn {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .task-body { flex: 1; min-width: 0; }
+
+  .title {
+    font-size: 14px;
+    display: block;
+  }
+
+  li.completed .title {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .actions button {
+    background: none;
+    color: var(--muted);
+    padding: 4px 6px;
+    font-size: 14px;
+  }
+
+  .actions button:hover { background: var(--bg); color: var(--ink); }
+
+  .footer-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+
+  .footer-row button {
+    background: none;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+
+  .footer-row button:hover { background: var(--bg); color: var(--ink); }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 24px 0;
+  }
+ .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+} 
+</style>
 </head>
 <body>
-  <h1>Task Manager</h1>
-  <input type="text" id="taskInput" placeholder="New task..." onkeypress="handleKeyPress(event)">
+  <div class="app">
+    <h1>Tasks</h1>
+    <p class="subtitle">A small, focused task manager.</p>
+
+    <div class="panel">
+    <div class="input-row">
+  <label for="taskInput" class="sr-only">Task title</label>
+  <input type="text" id="taskInput" placeholder="Add a task..." onkeypress="handleKeyPress(event)">
+
+  <label for="prioritySelect" class="sr-only">Priority</label>
+  <select id="prioritySelect">
+    <option value="low">Low</option>
+    <option value="medium">Medium</option>
+    <option value="high">High</option>
+  </select>
+
+  <label for="dueDateInput" class="sr-only">Due date</label>
+  <input type="date" id="dueDateInput">
+
   <button onclick="addTask()">Add</button>
-  <ul id="taskList"></ul>
+</div>
+      
+
+      <div class="tabs">
+        <button onclick="setFilter('all')" id="filter-all" class="active">All</button>
+        <button onclick="setFilter('active')" id="filter-active">Active</button>
+        <button onclick="setFilter('completed')" id="filter-completed">Completed</button>
+      </div>
+
+      <div class="task-count" id="taskCount"></div>
+
+      <ul id="taskList"></ul>
+
+      <div class="footer-row">
+        <button onclick="clearCompleted()">Clear completed</button>
+      </div>
+    </div>
+  </div>
 
   <script>
+    let currentFilter = 'all';
+    let allTasks = [];
+    const priorityColors = { high: 'var(--high)', medium: 'var(--medium)', low: 'var(--low)' };
+
     async function loadTasks() {
       const res = await fetch('/api/tasks');
-      const tasks = await res.json();
+      allTasks = await res.json();
+      renderTasks();
+    }
+
+    function renderTasks() {
       const list = document.getElementById('taskList');
+      const countEl = document.getElementById('taskCount');
       list.innerHTML = '';
-      tasks.forEach(task => {
+
+      const filtered = allTasks.filter(t => {
+        if (currentFilter === 'active') return !t.completed;
+        if (currentFilter === 'completed') return t.completed;
+        return true;
+      });
+
+      const activeCount = allTasks.filter(t => !t.completed).length;
+      const doneCount = allTasks.filter(t => t.completed).length;
+      countEl.textContent = `${activeCount} active, ${doneCount} completed`;
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<li class="empty" style="border:none;">Nothing here yet.</li>';
+        return;
+      }
+
+      filtered.forEach(task => {
         const li = document.createElement('li');
         li.className = task.completed ? 'completed' : '';
+
+        const dueText = task.dueDate ? `Due ${task.dueDate}` : '';
+
         li.innerHTML = `
-          ${task.title}
-          <button onclick="completeTask(${task.id})">✓</button>
-          <button onclick="deleteTask(${task.id})">✕</button>
+          <button class="check-btn" onclick="completeTask(${task.id})"></button>
+          <div class="task-body">
+            <span class="title">${task.title}</span>
+            <div class="meta">
+              <span class="priority-dot" style="background:${priorityColors[task.priority] || priorityColors.low}"></span>
+              <span>${task.priority}</span>
+              ${dueText ? `<span>· ${dueText}</span>` : ''}
+            </div>
+          </div>
+          <span class="actions">
+            <button onclick="editTask(${task.id})">✎</button>
+            <button onclick="deleteTask(${task.id})">✕</button>
+          </span>
         `;
         list.appendChild(li);
       });
     }
 
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`filter-${filter}`).classList.add('active');
+      renderTasks();
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') addTask();
+    }
+
     async function addTask() {
       const input = document.getElementById('taskInput');
+      const priority = document.getElementById('prioritySelect').value;
+      const dueDate = document.getElementById('dueDateInput').value;
       const title = input.value;
+
       await fetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title })
+        body: JSON.stringify({ title, priority, dueDate })
       });
+
       input.value = '';
+      document.getElementById('dueDateInput').value = '';
+      loadTasks();
+    }
+
+    async function editTask(id) {
+      const newTitle = prompt('Edit task:');
+      if (newTitle === null) return;
+      await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle })
+      });
       loadTasks();
     }
 
@@ -53,13 +376,13 @@
       await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
       loadTasks();
     }
-    function handleKeyPress(event) {
-  if (event.key === 'Enter') {
-    addTask();
-  }
-}
 
-    loadTasks(); // run once when the page loads
+    async function clearCompleted() {
+      await fetch('/api/tasks/completed', { method: 'DELETE' });
+      loadTasks();
+    }
+
+    loadTasks();
   </script>
 </body>
 </html>

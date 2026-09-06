@@ -5,10 +5,7 @@ const app = express();
 const PORT = 3000;
 const FILE_PATH = 'tasks.json';
 
-// Middleware: lets the server understand JSON sent from the browser
 app.use(express.json());
-
-// Middleware: serves static files (HTML/CSS/JS) from the "public" folder
 app.use(express.static('public'));
 
 function loadTasks() {
@@ -22,42 +19,64 @@ function saveTasks(tasks) {
   fs.writeFileSync(FILE_PATH, JSON.stringify(tasks, null, 2));
 }
 
-// GET all tasks
 app.get('/api/tasks', (req, res) => {
-  const tasks = loadTasks();
-  res.json(tasks);
+  res.json(loadTasks());
 });
 
-// POST a new task
 app.post('/api/tasks', (req, res) => {
   const tasks = loadTasks();
-  const title = req.body.title;
+  const { title, priority, dueDate } = req.body;
 
   if (!title || title.trim() === '') {
     return res.status(400).json({ error: 'Title cannot be empty' });
   }
 
-  const task = { id: tasks.length + 1, title, completed: false };
+  const task = {
+    id: tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1,
+    title,
+    completed: false,
+    priority: priority || 'low',
+    dueDate: dueDate || null
+  };
   tasks.push(task);
   saveTasks(tasks);
   res.status(201).json(task);
 });
 
-// PUT (update) a task's completed status
-app.put('/api/tasks/:id', (req, res) => {
+app.patch('/api/tasks/:id', (req, res) => {
   const tasks = loadTasks();
   const task = tasks.find(t => t.id === Number(req.params.id));
+  if (!task) return res.status(404).json({ error: 'Task not found' });
 
-  if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+  if (req.body.title !== undefined) {
+    if (req.body.title.trim() === '') {
+      return res.status(400).json({ error: 'Title cannot be empty' });
+    }
+    task.title = req.body.title;
   }
+  if (req.body.priority !== undefined) task.priority = req.body.priority;
+  if (req.body.dueDate !== undefined) task.dueDate = req.body.dueDate;
 
-  task.completed = true;
   saveTasks(tasks);
   res.json(task);
 });
 
-// DELETE a task
+app.put('/api/tasks/:id', (req, res) => {
+  const tasks = loadTasks();
+  const task = tasks.find(t => t.id === Number(req.params.id));
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+  task.completed = !task.completed;
+  saveTasks(tasks);
+  res.json(task);
+});
+
+app.delete('/api/tasks/completed', (req, res) => {
+  let tasks = loadTasks();
+  tasks = tasks.filter(t => !t.completed);
+  saveTasks(tasks);
+  res.status(204).send();
+});
+
 app.delete('/api/tasks/:id', (req, res) => {
   let tasks = loadTasks();
   tasks = tasks.filter(t => t.id !== Number(req.params.id));
