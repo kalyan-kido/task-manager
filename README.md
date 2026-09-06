@@ -30,13 +30,17 @@ A full-stack task management web application built with Node.js and Express, fea
 ## Running Locally
 
 1. Clone the repository:
-``````git clone https://github.com/kalyan-kido/task-manager.git
-cd task-manager``````
+
+       git clone https://github.com/kalyan-kido/task-manager.git
+       cd task-manager
+
 2. Install dependencies:
-`````` npm install``````
+
+       npm install
 
 3. Start the server:
-``````node server.js``````
+
+       node server.js
 
 4. Open your browser to `http://localhost:3000`
 
